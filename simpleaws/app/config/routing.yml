@@ -1,0 +1,4 @@
+webfit_aws_main:
+    path: /
+    defaults: { _controller: WebfitAWSAppBundle:Default:main }
+
