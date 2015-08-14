@@ -1,9 +1,9 @@
 <?php
+namespace Webfit\AWS\AppBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Webfit\AWS\AppBundle\Service;
-
+use Aws\S3\S3Client;
 
 class AWS {
 
@@ -11,5 +11,11 @@ class AWS {
     {
         $this->container = $container;
         $this->em = $em;
+
+$s3 = new S3Client([
+    'version' => 'latest',
+    'region'  => 'ap-southeast-2a'
+]);
+var_dump($s3);
     }
 }
