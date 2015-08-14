@@ -1,0 +1,2 @@
+# simpleaws
+Simple AWS
