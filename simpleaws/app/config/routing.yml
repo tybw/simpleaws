@@ -2,3 +2,30 @@ webfit_aws_main:
     path: /
     defaults: { _controller: WebfitAWSAppBundle:Default:main }
 
+webfit_aws_ec2:
+    path: /{profile}/ec2
+    defaults: { _controller: WebfitAWSAppBundle:Default:ec2 }
+
+webfit_aws_ec2_status:
+    path: /{profile}/ec2/status
+    defaults: { _controller: WebfitAWSAppBundle:Default:ec2Status }
+
+webfit_aws_ec2_provision:
+    path: /{profile}/ec2/provision
+    defaults: { _controller: WebfitAWSAppBundle:Default:ec2Provision }
+
+webfit_aws_show_schedule:
+    path: /{profile}/schedule
+    defaults: { _controller: WebfitAWSAppBundle:Default:showSchedule }
+
+webfit_aws_add_schedule_now:
+    path: /{profile}/add/{asGroup}/{numInstances}/now
+    defaults: { _controller: WebfitAWSAppBundle:Default:scheduleNow }
+
+webfit_aws_add_schedule_at:
+    path: /{profile}/add/{asGroup}/{numInstances}/{date}/{time}
+    defaults: { _controller: WebfitAWSAppBundle:Default:scheduleAt }
+
+webfit_aws_scaling_historty:
+    path: /{profile}/{asGroup}/
+    defaults: { _controller: WebfitAWSAppBundle:Default:ec2ScalingHistory }

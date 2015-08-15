@@ -35,3 +35,7 @@
 
 # Composer PHAR
 /composer.phar
+
+# AWS local config
+aws-config.php
+aws-config.json
