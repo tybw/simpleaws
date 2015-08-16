@@ -42,3 +42,6 @@ aws-config.json
 
 # Local customisation
 !fix-permission.sh
+
+# Phpstorm
+.idea

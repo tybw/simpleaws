@@ -2,16 +2,12 @@
 
 namespace Webfit\AWS\AppBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Doctrine\ORM\QueryBuilder;
-use Webfit\AWS\AppBundle\Entity\Schedule;
-use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Query;
 use Doctrine\ORM\EntityManagerRepository;
+use Webfit\AWS\AppBundle\Entity\Schedule;
 
 class DefaultController extends Controller
 {
@@ -57,12 +53,15 @@ class DefaultController extends Controller
 
         $now = new \DateTime;
 
-        $query = $this->createQueryBuilder('schedule')
-            ->where('schedule_at >= :now ')
-            ->setParameter('now', $now)
+        $em = $this->getDoctrine()->getEntityManager();
+        $query = $em->createQueryBuilder()
+            ->select('s')
+            ->from('WebfitAWSAppBundle:Schedule', 's')
+            ->where('s.scheduleAt >= :currentTime')
+            ->setParameter('currentTime', $now->format("%Y-%m-%d %H:%M:%S"))
             ->getQuery();
 
-        $schedules = $q->getResult();
+        $schedules = $query->getResult();
 
         return new JsonResponse($result);
     }
