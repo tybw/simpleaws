@@ -19,13 +19,13 @@ webfit_aws_show_schedule:
     defaults: { _controller: WebfitAWSAppBundle:Default:showSchedule }
 
 webfit_aws_add_schedule_now:
-    path: /{profile}/add/{asGroup}/{numInstances}/now
+    path: /{profile}/schedule/{asGroup}/{numInstances}/now
     defaults: { _controller: WebfitAWSAppBundle:Default:scheduleNow }
 
 webfit_aws_add_schedule_at:
-    path: /{profile}/add/{asGroup}/{numInstances}/{date}/{time}
+    path: /{profile}/schedule/{asGroup}/{numInstances}/{date}/{time}
     defaults: { _controller: WebfitAWSAppBundle:Default:scheduleAt }
 
 webfit_aws_scaling_historty:
-    path: /{profile}/{asGroup}/
-    defaults: { _controller: WebfitAWSAppBundle:Default:ec2ScalingHistory }
+    path: /{profile}/history/{asGroup}/
+    defaults: { _controller: WebfitAWSAppBundle:Default:history }

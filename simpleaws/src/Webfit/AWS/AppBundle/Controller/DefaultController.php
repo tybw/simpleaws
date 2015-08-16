@@ -6,6 +6,12 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Doctrine\ORM\QueryBuilder;
+use Webfit\AWS\AppBundle\Entity\Schedule;
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityManagerRepository;
 
 class DefaultController extends Controller
 {
@@ -42,6 +48,22 @@ class DefaultController extends Controller
             $result = $this->aws[$profile]->ec2InstanceDetails();
         }
         
+        return new JsonResponse($result);
+    }
+
+    public function showScheduleAction(Request $request)
+    {
+        $result = array();
+
+        $now = new \DateTime;
+
+        $query = $this->createQueryBuilder('schedule')
+            ->where('schedule_at >= :now ')
+            ->setParameter('now', $now)
+            ->getQuery();
+
+        $schedules = $q->getResult();
+
         return new JsonResponse($result);
     }
 
