@@ -107,9 +107,35 @@ class AWSService
     public function autoScalingGroups($asGroup = null)
     {
         // var_dump($this->as->describeAutoScalingGroups());
-        var_dump($this->as->describeScalingActivities(array(
-            'DryRun' => false,
-            'AutoScalingGroupName' => '3wm dynamic 15'
-        )));
+        $response = $this->as->describeScalingActivities(array());
+
+        $result = array();
+        foreach ($response->get('Activities') as $group) {
+
+            $asg = $group['AutoScalingGroupName'];
+
+            if (! isset($result[$asg])) {
+                $result[$asg] = array();
+            }
+            $result[$asg][] = array(
+                'id'        => $group['ActivityId'],
+                'startTime' => $group['StartTime'],
+                'endTime'   => $group['EndTime'],
+                'cause'     => $group['Cause']
+            );
+        }
+
+        foreach ($result as $id => $set) {
+            usort($set, function($a, $b) {
+                if ($a['startTime'] == $b['startTime']) return 0;
+                return $a['startTime'] < $b['startTime'] ? -1 : 1;
+            });
+        }
+
+        if ($asGroup !== null) {
+            $result = $result[$asGroup];
+        }
+
+        return $result;
     }
 }

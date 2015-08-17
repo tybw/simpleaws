@@ -36,6 +36,6 @@ webfit_aws_scaling_historty:
     methods: [GET]
 
 webfit_aws_scaling_status:
-    path: /{profile}/autoscaling
-    defaults: { _controller: WebfitAWSAppBundle:Default:autoScalingStatus }
+    path: /{profile}/autoscaling/{asGroup}
+    defaults: { _controller: WebfitAWSAppBundle:Default:autoScalingStatus, asGroup: null }
     methods: [GET]

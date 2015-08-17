@@ -146,10 +146,15 @@ class DefaultController extends Controller
         $result = array();
 
         $profile = $request->get('profile');
-        if (isset($this->aws[$profile])) {
-            $result = $this->aws[$profile]->autoScalingGroups();
+        $asGroup = $request->get('asGroup');
+        if ($asGroup !== null) {
+            $asGroup = preg_replace('/_/', ' ', $asGroup);
         }
+        if (isset($this->aws[$profile])) {
 
+            $result = $this->aws[$profile]->autoScalingGroups($asGroup);
+        }
+        //var_dump($result);
         return new JsonResponse($result);
     }
 
