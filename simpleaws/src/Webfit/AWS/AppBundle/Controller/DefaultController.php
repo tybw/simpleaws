@@ -24,11 +24,12 @@ class DefaultController extends Controller
         return $this->render('WebfitAWSAppBundle:Main:index.html.twig', []);
     }
 
-    public function ec2StatusAction(Request $request, $profile)
+    public function ec2StatusAction(Request $request)
     {
         $this->config_aws();
         $result = array();
 
+        $profile = $request->get('profile');
         if (isset($this->aws[$profile])) {
             $result = $this->aws[$profile]->ec2InstanceStatus();
         }
@@ -134,6 +135,19 @@ class DefaultController extends Controller
                 'returnCode' => 1,
                 'message'    => 'Requested schedule is too near to existing schedules'
             );
+        }
+
+        return new JsonResponse($result);
+    }
+
+    public function autoScalingStatusAction(Request $request)
+    {
+        $this->config_aws();
+        $result = array();
+
+        $profile = $request->get('profile');
+        if (isset($this->aws[$profile])) {
+            $result = $this->aws[$profile]->autoScalingGroups();
         }
 
         return new JsonResponse($result);

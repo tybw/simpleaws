@@ -104,4 +104,12 @@ class AWSService
         return $result;
     }
 
+    public function autoScalingGroups($asGroup = null)
+    {
+        // var_dump($this->as->describeAutoScalingGroups());
+        var_dump($this->as->describeScalingActivities(array(
+            'DryRun' => false,
+            'AutoScalingGroupName' => '3wm dynamic 15'
+        )));
+    }
 }
