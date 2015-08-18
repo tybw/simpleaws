@@ -104,9 +104,48 @@ class AWSService
         return $result;
     }
 
-    public function autoScalingGroups($asGroup = null)
+    public function autoScalingDetails($asGroup = null)
     {
-        // var_dump($this->as->describeAutoScalingGroups());
+        $response = $this->as->describeAutoScalingGroups();
+
+        $result = array();
+        foreach ($response->get('AutoScalingGroups') as $group) {
+            $instanceList = array();
+            foreach($group['Instances'] as $instance) {
+                if (strcmp($instance['LifecycleState'], 'InService') == 0) {
+                    $instanceList[] = $instance['InstanceId'];
+                }
+            }
+            $result[$group['AutoScalingGroupName']] = array(
+                'asGroup' => $group['AutoScalingGroupName'],
+                'minSize' => $group['MinSize'],
+                'maxSize' => $group['MaxSize'],
+                'desiredCapacity' => $group['DesiredCapacity'],
+                'instances' => $instanceList
+            );
+        }
+
+        if ($asGroup !== null) {
+            $result = $result[$asGroup];
+        }
+
+        return $result;
+    }
+
+    public function autoScalingList($asGroup = null)
+    {
+        $response = $this->as->describeAutoScalingGroups();
+
+        $result = array();
+        foreach ($response->get('AutoScalingGroups') as $group) {
+            $result[] = $group['AutoScalingGroupName'];
+        }
+
+        return $result;
+    }
+
+    public function autoScalingHistory($asGroup = null)
+    {
         $response = $this->as->describeScalingActivities(array());
 
         $result = array();
@@ -137,5 +176,10 @@ class AWSService
         }
 
         return $result;
+    }
+
+    public function autoScalingSetDesiredCapacity($asGroup, $desiredCapacity)
+    {
+        $this->as->setDesiredCapacity();
     }
 }

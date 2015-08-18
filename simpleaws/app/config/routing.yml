@@ -27,15 +27,20 @@ webfit_aws_add_schedule_now:
 
 webfit_aws_add_schedule_at:
     path: /{profile}/schedule/{asGroup}/{quantity}/{date}/{time}
-    defaults: { _controller: WebfitAWSAppBundle:Default:scheduleAt }
+    defaults: { _controller: WebfitAWSAppBundle:Default:scheduleAt, time: null }
     methods: [GET, POST]
 
 webfit_aws_scaling_historty:
-    path: /{profile}/history/{asGroup}/
-    defaults: { _controller: WebfitAWSAppBundle:Default:history }
+    path: /{profile}/scaling/history/{asGroup}
+    defaults: { _controller: WebfitAWSAppBundle:Default:autoScalingHistory, asGroup: null }
     methods: [GET]
 
-webfit_aws_scaling_status:
-    path: /{profile}/autoscaling/{asGroup}
-    defaults: { _controller: WebfitAWSAppBundle:Default:autoScalingStatus, asGroup: null }
+webfit_aws_scaling_group_list:
+    path: /{profile}/scaling/list
+    defaults: { _controller: WebfitAWSAppBundle:Default:autoScalingList }
+    methods: [GET]
+
+webfit_aws_scaling_groups:
+    path: /{profile}/scaling/groups/{asGroup}
+    defaults: { _controller: WebfitAWSAppBundle:Default:autoScalingDetails, asGroup: null }
     methods: [GET]

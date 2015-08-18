@@ -34,7 +34,10 @@ class DefaultController extends Controller
             $result = $this->aws[$profile]->ec2InstanceStatus();
         }
 
-        return new JsonResponse($result);
+        $return = new JsonResponse();
+        $return->setData($result);
+
+        return $return;
     }
 
     public function ec2Action(Request $request, $profile)
@@ -46,7 +49,10 @@ class DefaultController extends Controller
             $result = $this->aws[$profile]->ec2InstanceDetails();
         }
         
-        return new JsonResponse($result);
+        $return = new JsonResponse();
+        $return->setData($result);
+
+        return $return;
     }
 
     public function showScheduleAction(Request $request)
@@ -74,7 +80,10 @@ class DefaultController extends Controller
             );
         }
 
-        return new JsonResponse($result);
+        $return = new JsonResponse();
+        $return->setData($result);
+
+        return $return;
     }
 
     /**
@@ -104,7 +113,10 @@ class DefaultController extends Controller
             );
         }
 
-        return new JsonResponse($result);
+        $return = new JsonResponse();
+        $return->setData($result);
+
+        return $return;
     }
 
     public function scheduleNowAction(Request $request)
@@ -137,25 +149,69 @@ class DefaultController extends Controller
             );
         }
 
-        return new JsonResponse($result);
+        $return = new JsonResponse();
+        $return->setData($result);
+
+        return $return;
     }
 
-    public function autoScalingStatusAction(Request $request)
+    public function autoScalingDetailsAction(Request $request)
     {
         $this->config_aws();
         $result = array();
 
         $profile = $request->get('profile');
         $asGroup = $request->get('asGroup');
+
         if ($asGroup !== null) {
             $asGroup = preg_replace('/_/', ' ', $asGroup);
         }
         if (isset($this->aws[$profile])) {
-
-            $result = $this->aws[$profile]->autoScalingGroups($asGroup);
+            $result = $this->aws[$profile]->autoScalingDetails($asGroup);
         }
-        //var_dump($result);
-        return new JsonResponse($result);
+
+        $return = new JsonResponse();
+        $return->setData($result);
+
+        return $return;
+    }
+
+    public function autoScalingListAction(Request $request)
+    {
+        $this->config_aws();
+        $result = array();
+
+        $profile = $request->get('profile');
+        if (isset($this->aws[$profile])) {
+            $result = $this->aws[$profile]->autoScalingList();
+        }
+
+        $return = new JsonResponse();
+        $return->setData($result);
+
+        return $return;
+    }
+
+    public function autoScalingHistoryAction(Request $request)
+    {
+        $this->config_aws();
+        $result = array();
+
+        $profile = $request->get('profile');
+        $asGroup = $request->get('asGroup');
+
+        if ($asGroup !== null) {
+            $asGroup = preg_replace('/_/', ' ', $asGroup);
+        }
+
+        if (isset($this->aws[$profile])) {
+            $result = $this->aws[$profile]->autoScalingHistory($asGroup);
+        }
+
+        $return = new JsonResponse();
+        $return->setData($result);
+
+        return $return;
     }
 
     private function updateAutoScalingGroup()
