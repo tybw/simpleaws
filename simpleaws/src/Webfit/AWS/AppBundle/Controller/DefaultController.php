@@ -131,10 +131,10 @@ class DefaultController extends Controller
 
         if (! $this->checkDuplicateSchedule($asGroup, $scheduleDate, $scheduleTime)) {
             $this->saveSchedule($asGroup, $quantity, $scheduleOn);
-            if ($this->updateAutoScalingGroup()) {
+            if ($this->updateAutoScalingGroup($asGroup, $quantity)) {
                 $result = array(
                     'returnCode' => 0,
-                    'message'    => 'Desired number of EC2 intances has been set.'
+                    'message'    => sprintf('Desired number of EC2 intances has been set to %s for group %s.', $quantity, $asGroup)
                 );
             } else {
                 $result = array(
@@ -214,9 +214,30 @@ class DefaultController extends Controller
         return $return;
     }
 
-    private function updateAutoScalingGroup()
+    private function updateAutoScalingGroup($asGroup, $quantity)
     {
-        return true;
+        $this->config_aws();
+        $result = array();
+
+        $profile  = $request->get('profile');
+        $asGroup  = $request->get('asGroup');
+        $quantity = $request->get('quantity');
+
+        if ($asGroup !== null) {
+            $asGroup = preg_replace('/_/', ' ', $asGroup);
+        }
+
+        if (preg_match('/d+/',$quantity)) {
+
+            if (isset($this->aws[$profile])) {
+                $result = $this->aws[$profile]->autoScalingSetDesiredCapacity($asGroup, $quantity);
+            }
+        }
+
+        $return = new JsonResponse();
+        $return->setData($result);
+
+        return $return;
     }
 
     private function checkDuplicateSchedule($asGroup, $scheduleDate, $scheduleTime)

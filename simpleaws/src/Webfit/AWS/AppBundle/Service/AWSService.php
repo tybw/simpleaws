@@ -180,6 +180,14 @@ class AWSService
 
     public function autoScalingSetDesiredCapacity($asGroup, $desiredCapacity)
     {
-        $this->as->setDesiredCapacity();
+        $result = array();
+
+        $response = $this->as->setDesiredCapacity(array(
+            'AutoScalingGroupName' => $asGroup,
+            'DesiredCapacity' => $desiredCapacity,
+            'HonorCooldown' => true
+        ));
+
+        return $result;
     }
 }
