@@ -132,6 +132,22 @@ class AWSService
         return $result;
     }
 
+    public function autoScalingTags($asGroup) {
+
+        $response = $this->as->describeAutoScalingGroups(array(
+            'AutoScalingGroupNames' => array($asGroup)
+        ));
+
+        $result = array();
+        $group  = $response->get('AutoScalingGroups');
+
+        foreach ($group[0]['Tags'] as $tagEntry) {
+            $result[$tagEntry['Key']] = $tagEntry['Value'];
+        }
+
+        return $result;
+    }
+
     public function autoScalingList($asGroup = null)
     {
         $response = $this->as->describeAutoScalingGroups();
@@ -187,6 +203,8 @@ class AWSService
             'DesiredCapacity' => $desiredCapacity,
             'HonorCooldown' => true
         ));
+
+        $result[] = $response;
 
         return $result;
     }

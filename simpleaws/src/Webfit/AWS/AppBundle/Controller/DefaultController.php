@@ -20,13 +20,13 @@ class DefaultController extends Controller
 
     public function mainAction(Request $request)
     {
-        $this->config_aws();
+        $this->init(); // config_aws();
         return $this->render('WebfitAWSAppBundle:Main:index.html.twig', []);
     }
 
     public function ec2StatusAction(Request $request)
     {
-        $this->config_aws();
+        $this->init(); // config_aws();
         $result = array();
 
         $profile = $request->get('profile');
@@ -42,9 +42,10 @@ class DefaultController extends Controller
 
     public function ec2Action(Request $request, $profile)
     {
-        $this->config_aws();
+        $this->init(); // config_aws();
         $result = array();
 
+        $profile = $request->get('profile');
         if (isset($this->aws[$profile])) {
             $result = $this->aws[$profile]->ec2InstanceDetails();
         }
@@ -100,7 +101,7 @@ class DefaultController extends Controller
 
         if (! $this->checkDuplicateSchedule($asGroup, $scheduleDate, $scheduleTime)) {
 
-            $this->saveSchedule($asGroup, $quantity, $scheduleOn);
+            $this->saveSchedule($asGroup, $quantity, $scheduleOn, Schedule::NOTDONE);
 
             $result = array(
                 'returnCode' => 0,
@@ -121,32 +122,56 @@ class DefaultController extends Controller
 
     public function scheduleNowAction(Request $request)
     {
+        $result = array();
+
         $this->init();
 
+        // $this->config_aws();
+
+        $profile    = $request->get('profile');
         $asGroup    = $request->get('asGroup');
         $quantity   = $request->get('quantity');
         $scheduleOn = clone $this->now;
         $scheduleDate = $scheduleOn->format('Y-m-d');
         $scheduleTime = $scheduleOn->format('g:ia');
 
-        if (! $this->checkDuplicateSchedule($asGroup, $scheduleDate, $scheduleTime)) {
-            $this->saveSchedule($asGroup, $quantity, $scheduleOn);
-            if ($this->updateAutoScalingGroup($asGroup, $quantity)) {
+        $proceed = true;
+
+        if ($this->checkDuplicateSchedule($asGroup, $scheduleDate, $scheduleTime)) {
+
+            $proceed = false;
+
+            $result = array(
+                'returnCode' => 1,
+                'message'    => 'Requested schedule is too near to existing schedules'
+            );
+        }
+
+        if (! $this->asGroupAdjustableByUser($profile, $asGroup)) {
+
+            $proceed = false;
+
+            $result = array(
+                'returnCode' => 1,
+                'message'    => 'Autoscaling group ('.$asGroup .') is not adjustable by user remotely'
+            );
+        }
+
+        if ($proceed) {
+
+            $this->saveSchedule($asGroup, $quantity, $scheduleOn, Schedule::DONE);
+
+            if ($this->updateAutoScalingGroup($profile, $asGroup, $quantity)) {
                 $result = array(
                     'returnCode' => 0,
                     'message'    => sprintf('Desired number of EC2 intances has been set to %s for group %s.', $quantity, $asGroup)
                 );
             } else {
                 $result = array(
-                    'returnCode' => 2,
+                    'returnCode' => 1,
                     'message'    => 'Problem encountered in chaning auto-scaling group.'
                 );
             }
-        } else {
-            $result = array(
-                'returnCode' => 1,
-                'message'    => 'Requested schedule is too near to existing schedules'
-            );
         }
 
         $return = new JsonResponse();
@@ -157,7 +182,7 @@ class DefaultController extends Controller
 
     public function autoScalingDetailsAction(Request $request)
     {
-        $this->config_aws();
+        $this->init(); //config_aws();
         $result = array();
 
         $profile = $request->get('profile');
@@ -178,7 +203,7 @@ class DefaultController extends Controller
 
     public function autoScalingListAction(Request $request)
     {
-        $this->config_aws();
+        $this->init(); //config_aws();
         $result = array();
 
         $profile = $request->get('profile');
@@ -194,7 +219,7 @@ class DefaultController extends Controller
 
     public function autoScalingHistoryAction(Request $request)
     {
-        $this->config_aws();
+        $this->init(); //config_aws();
         $result = array();
 
         $profile = $request->get('profile');
@@ -214,20 +239,15 @@ class DefaultController extends Controller
         return $return;
     }
 
-    private function updateAutoScalingGroup($asGroup, $quantity)
+    private function updateAutoScalingGroup($profile, $asGroup, $quantity)
     {
-        $this->config_aws();
         $result = array();
-
-        $profile  = $request->get('profile');
-        $asGroup  = $request->get('asGroup');
-        $quantity = $request->get('quantity');
 
         if ($asGroup !== null) {
             $asGroup = preg_replace('/_/', ' ', $asGroup);
         }
 
-        if (preg_match('/d+/',$quantity)) {
+        if (preg_match('/\d+/', $quantity)) {
 
             if (isset($this->aws[$profile])) {
                 $result = $this->aws[$profile]->autoScalingSetDesiredCapacity($asGroup, $quantity);
@@ -264,7 +284,7 @@ class DefaultController extends Controller
         return (count($schedules) > 0) ? true : false;
     }
 
-    private function saveSchedule($asGroup, $quantity, $scheduleOn)
+    private function saveSchedule($asGroup, $quantity, $scheduleOn, $done_flag)
     {
         $runAt = clone $scheduleOn;
         $runAt->modify(Schedule::ADVANCED_BY);
@@ -276,9 +296,25 @@ class DefaultController extends Controller
         $schedule->setCreateAt($this->now);
         $schedule->setScheduleAt($scheduleOn);
         $schedule->setRunAt($runAt);
+        $schedule->setDone($done_flag);
 
         $this->em->persist($schedule);
         $this->em->flush();
+    }
+
+    private function asGroupAdjustableByUser($profile, $asGroup)
+    {
+        if ($asGroup !== null) {
+            $asGroup = preg_replace('/_/', ' ', $asGroup);
+        }
+
+        $tags = $this->aws[$profile]->autoScalingTags($asGroup);
+        foreach ($tags as $key => $value) {
+            if (strcmp($key, 'adjustable') == 0 && strcmp($value, 'user') == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function config_aws()
@@ -300,8 +336,11 @@ class DefaultController extends Controller
     }
 
     private function init() {
+
         $this->now = new \DateTime;
         $this->em = $this->getDoctrine()->getEntityManager();
+        $this->config_aws();
+
         return true;
     }
 }

@@ -20,6 +20,8 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 class Schedule
 {
     const ADVANCED_BY = '-3 hours';
+    const DONE = 1;
+    const NOTDONE = 0;
 
     /**
      * @var integer
@@ -72,6 +74,12 @@ class Schedule
      */
     protected $run_at;
 
+    /**
+     * @var bool
+     * 
+     * @ORM\Column(name="done", type="boolean", nullable=false, options={"default" = null})
+     */
+    protected $done;
 
     /**
      * Set rowid
@@ -209,5 +217,28 @@ class Schedule
     public function getRunAt()
     {
         return $this->run_at;
+    }
+
+    /**
+     * Set done
+     *
+     * @param boolean $done
+     * @return Schedule
+     */
+    public function setDone($done)
+    {
+        $this->done = $done;
+
+        return $this;
+    }
+
+    /**
+     * Get done
+     *
+     * @return boolean 
+     */
+    public function getDone()
+    {
+        return $this->done;
     }
 }
