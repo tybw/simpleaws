@@ -126,8 +126,6 @@ class DefaultController extends Controller
 
         $this->init();
 
-        // $this->config_aws();
-
         $profile    = $request->get('profile');
         $asGroup    = $request->get('asGroup');
         $quantity   = $request->get('quantity');
@@ -161,7 +159,7 @@ class DefaultController extends Controller
 
             $this->saveSchedule($asGroup, $quantity, $scheduleOn, Schedule::DONE);
 
-            if ($this->updateAutoScalingGroup($profile, $asGroup, $quantity)) {
+            if ($this->updateAutoScalingGroup($profile, $asGroup, $quantity, null, $quantity)) {
                 $result = array(
                     'returnCode' => 0,
                     'message'    => sprintf('Desired number of EC2 intances has been set to %s for group %s.', $quantity, $asGroup)
@@ -239,7 +237,7 @@ class DefaultController extends Controller
         return $return;
     }
 
-    private function updateAutoScalingGroup($profile, $asGroup, $quantity)
+    private function updateAutoScalingGroup($profile, $asGroup, $min = null, $max = null, $desired = null)
     {
         $result = array();
 
@@ -247,11 +245,13 @@ class DefaultController extends Controller
             $asGroup = preg_replace('/_/', ' ', $asGroup);
         }
 
-        if (preg_match('/\d+/', $quantity)) {
+        $min     = ($min     !== null && preg_match('/\d+/', $min)) ? $min : null;
+        $max     = ($max     !== null && preg_match('/\d+/', $max)) ? $max : null;
+        $desired = ($desired !== null && preg_match('/\d+/', $desired)) ? $desired : null;
 
-            if (isset($this->aws[$profile])) {
-                $result = $this->aws[$profile]->autoScalingSetDesiredCapacity($asGroup, $quantity);
-            }
+        if (isset($this->aws[$profile])) {
+            // $result = $this->aws[$profile]->autoScalingSetDesiredCapacity($asGroup, $quantity);
+            $result = $this->aws[$profile]->autoScalingUpdateConfig($asGroup, $min, $max, $desired);
         }
 
         $return = new JsonResponse();

@@ -1,4 +1,5 @@
 <?php
+
 namespace Webfit\AWS\AppBundle\Service;
 
 use Doctrine\ORM\EntityManager;
@@ -205,6 +206,32 @@ class AWSService
         ));
 
         $result[] = $response;
+
+        return $result;
+    }
+
+    public function autoScalingUpdateConfig($asGroup, $min = null, $max = null, $desired = null)
+    {
+        $result = array();
+        $config = array();
+
+        if ($min !== null) {
+            $config['MinSize'] = $min;
+        }
+
+        if ($max !== null) {
+            $config['MaxSize'] = $max;
+        }
+
+        if ($desired !== null) {
+            $config['DesiredCapacity'] = $desired;
+        }
+
+        if (!empty($config)) {
+            $config['AutoScalingGroupName'] = $asGroup;
+            $response = $this->as->updateAutoScalingGroup($config);
+            $result[] = $response;
+        }
 
         return $result;
     }
