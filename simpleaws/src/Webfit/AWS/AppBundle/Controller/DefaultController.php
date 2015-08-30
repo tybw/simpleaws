@@ -129,13 +129,22 @@ class DefaultController extends Controller
         $profile    = $request->get('profile');
         $asGroup    = $request->get('asGroup');
         $quantity   = $request->get('quantity');
+        $confirm    = $request->get('confirm');
         $scheduleOn = clone $this->now;
         $scheduleDate = $scheduleOn->format('Y-m-d');
         $scheduleTime = $scheduleOn->format('g:ia');
 
         $proceed = true;
 
-        if ($this->checkDuplicateSchedule($asGroup, $scheduleDate, $scheduleTime)) {
+        if ($confirm === null || $confirm != 1) {
+            $proceed = false;
+            $result = array(
+                'returnCode' => 1,
+                'message'    => 'Autoscaling group ('.$asGroup .') update is not confirmed by user'
+            );
+        }
+
+        if ($proceed && $this->checkDuplicateSchedule($asGroup, $scheduleDate, $scheduleTime)) {
 
             $proceed = false;
 
@@ -145,7 +154,7 @@ class DefaultController extends Controller
             );
         }
 
-        if (! $this->asGroupAdjustableByUser($profile, $asGroup)) {
+        if ($proceed && ! $this->asGroupAdjustableByUser($profile, $asGroup)) {
 
             $proceed = false;
 

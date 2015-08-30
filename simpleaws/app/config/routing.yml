@@ -22,7 +22,7 @@ webfit_aws_show_schedule:
 
 webfit_aws_add_schedule_now:
     path: /{profile}/schedule/{asGroup}/{quantity}/now
-    defaults: { _controller: WebfitAWSAppBundle:Default:scheduleNow }
+    defaults: { _controller: WebfitAWSAppBundle:Default:scheduleNow, confirm: null }
     methods: [GET, POST]
 
 webfit_aws_add_schedule_at:
